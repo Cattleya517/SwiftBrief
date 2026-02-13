@@ -1,0 +1,43 @@
+diff --git a/node_modules/html2canvas/dist/html2canvas.esm.js b/node_modules/html2canvas/dist/html2canvas.esm.js
+index dab56ad..5645385 100644
+--- a/node_modules/html2canvas/dist/html2canvas.esm.js
++++ b/node_modules/html2canvas/dist/html2canvas.esm.js
+@@ -1717,7 +1717,9 @@ var color$1 = {
+         if (value.type === 18 /* FUNCTION */) {
+             var colorFunction = SUPPORTED_COLOR_FUNCTIONS[value.name];
+             if (typeof colorFunction === 'undefined') {
+-                throw new Error("Attempting to parse an unsupported color function \"" + value.name + "\"");
++                // Unsupported color functions (lab, oklch, oklab, lch, color)
++                // from CSS Color Level 4 — return transparent as fallback
++                return COLORS.TRANSPARENT;
+             }
+             return colorFunction(context, value.values);
+         }
+diff --git a/node_modules/html2canvas/dist/html2canvas.js b/node_modules/html2canvas/dist/html2canvas.js
+index 84cb30d..d4edf56 100644
+--- a/node_modules/html2canvas/dist/html2canvas.js
++++ b/node_modules/html2canvas/dist/html2canvas.js
+@@ -1723,7 +1723,9 @@
+             if (value.type === 18 /* FUNCTION */) {
+                 var colorFunction = SUPPORTED_COLOR_FUNCTIONS[value.name];
+                 if (typeof colorFunction === 'undefined') {
+-                    throw new Error("Attempting to parse an unsupported color function \"" + value.name + "\"");
++                    // Unsupported color functions (lab, oklch, oklab, lch, color)
++                    // from CSS Color Level 4 — return transparent as fallback
++                    return COLORS.TRANSPARENT;
+                 }
+                 return colorFunction(context, value.values);
+             }
+diff --git a/node_modules/html2canvas/dist/lib/css/types/color.js b/node_modules/html2canvas/dist/lib/css/types/color.js
+index 50608c3..b46891a 100644
+--- a/node_modules/html2canvas/dist/lib/css/types/color.js
++++ b/node_modules/html2canvas/dist/lib/css/types/color.js
+@@ -10,7 +10,7 @@ exports.color = {
+         if (value.type === 18 /* FUNCTION */) {
+             var colorFunction = SUPPORTED_COLOR_FUNCTIONS[value.name];
+             if (typeof colorFunction === 'undefined') {
+-                throw new Error("Attempting to parse an unsupported color function \"" + value.name + "\"");
++                return exports.COLORS.TRANSPARENT;
+             }
+             return colorFunction(context, value.values);
+         }

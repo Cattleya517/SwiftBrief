@@ -6,11 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "html2pdf.js": "^0.14.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.1.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -24,6 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "patch-package": "^8.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -13,13 +13,59 @@ interface Props {
 // A4 dimensions in mm
 const A4_WIDTH_MM = 210;
 const A4_HEIGHT_MM = 297;
-const MARGIN_TOP_MM = 20;
-const MARGIN_BOTTOM_MM = 20;
-const MARGIN_LEFT_MM = 15;
-const MARGIN_RIGHT_MM = 15;
+const MARGIN_TOP_MM = 10;
+const MARGIN_BOTTOM_MM = 10;
+const MARGIN_LEFT_MM = 10;
+const MARGIN_RIGHT_MM = 10;
 
 const CONTENT_WIDTH_MM = A4_WIDTH_MM - MARGIN_LEFT_MM - MARGIN_RIGHT_MM;
 const CONTENT_HEIGHT_MM = A4_HEIGHT_MM - MARGIN_TOP_MM - MARGIN_BOTTOM_MM;
+const CONTENT_WIDTH_PX = Math.round((CONTENT_WIDTH_MM / 25.4) * 96);
+const CONTENT_HEIGHT_PX = Math.round((CONTENT_HEIGHT_MM / 25.4) * 96);
+
+/**
+ * Find page break Y-positions (in canvas pixels) that avoid cutting through
+ * content sections. Falls back to the naive fixed-height break if a section
+ * is taller than one full page.
+ */
+function findPageBreaks(
+  sectionTops: number[],
+  totalHeightPx: number,
+  pageHeightPx: number,
+  scale: number
+): number[] {
+  const breaks: number[] = [];
+  let cursor = 0;
+  // Only adjust break if wasted space is < 30% of page height
+  const maxWaste = pageHeightPx * 0.3;
+
+  while (cursor + pageHeightPx < totalHeightPx) {
+    const idealBreak = cursor + pageHeightPx;
+
+    // Find the last section top that fits within this page
+    let bestBreak = idealBreak;
+    for (let i = sectionTops.length - 1; i >= 0; i--) {
+      const sectionTop = sectionTops[i];
+      if (sectionTop > cursor && sectionTop <= idealBreak) {
+        // Only use this section boundary if it doesn't waste too much space
+        if (idealBreak - sectionTop <= maxWaste) {
+          bestBreak = sectionTop;
+        }
+        break;
+      }
+    }
+
+    // If bestBreak == cursor (section taller than a page), use idealBreak
+    if (bestBreak <= cursor) {
+      bestBreak = idealBreak;
+    }
+
+    breaks.push(bestBreak * scale);
+    cursor = bestBreak;
+  }
+
+  return breaks;
+}
 
 export default function PdfDownloadButton({ previewRef, handleSubmit }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -39,11 +85,33 @@ export default function PdfDownloadButton({ previewRef, handleSubmit }: Props) {
       const html2canvas = await importHtml2Canvas();
       const jsPDF = (await import("jspdf")).default;
 
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-      });
+      // Temporarily fix element width to match A4 content area so
+      // html2canvas captures at the correct layout proportions.
+      const origWidth = element.style.width;
+      const origMaxWidth = element.style.maxWidth;
+      const origPosition = element.style.position;
+      element.style.width = `${CONTENT_WIDTH_PX}px`;
+      element.style.maxWidth = `${CONTENT_WIDTH_PX}px`;
+      element.style.position = "absolute";
+
+      // Measure section positions for smart page breaking
+      const elementTop = element.getBoundingClientRect().top;
+      const sectionTops = Array.from(element.children).map(
+        (child) => child.getBoundingClientRect().top - elementTop
+      );
+
+      let canvas: HTMLCanvasElement;
+      try {
+        canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        });
+      } finally {
+        element.style.width = origWidth;
+        element.style.maxWidth = origMaxWidth;
+        element.style.position = origPosition;
+      }
 
       const pdf = new jsPDF({
         unit: "mm",
@@ -64,16 +132,24 @@ export default function PdfDownloadButton({ previewRef, handleSubmit }: Props) {
           imgHeight
         );
       } else {
-        // Multi-page: slice the canvas into A4-sized chunks
+        // Multi-page: slice canvas at section boundaries to avoid cutting elements
+        const scale = canvas.width / CONTENT_WIDTH_PX;
+        const totalHeightPx = canvas.height / scale;
+        const pageBreaks = findPageBreaks(
+          sectionTops,
+          totalHeightPx,
+          CONTENT_HEIGHT_PX,
+          scale
+        );
+        // Add final break at end
+        const allBreaks = [0, ...pageBreaks, canvas.height];
         const scaleFactor = canvas.width / imgWidth;
-        const pageCanvasHeight = CONTENT_HEIGHT_MM * scaleFactor;
-        const totalPages = Math.ceil(canvas.height / pageCanvasHeight);
 
-        for (let page = 0; page < totalPages; page++) {
-          if (page > 0) pdf.addPage();
+        for (let i = 0; i < allBreaks.length - 1; i++) {
+          if (i > 0) pdf.addPage();
 
-          const srcY = page * pageCanvasHeight;
-          const srcHeight = Math.min(pageCanvasHeight, canvas.height - srcY);
+          const srcY = allBreaks[i];
+          const srcHeight = allBreaks[i + 1] - srcY;
           const destHeight = srcHeight / scaleFactor;
 
           const pageCanvas = document.createElement("canvas");

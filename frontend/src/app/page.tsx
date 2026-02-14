@@ -27,6 +27,35 @@ const INITIAL_VALUES: PetitionFormData = {
   court: "",
 };
 
+const EXAMPLE_DATA: PetitionFormData = {
+  applicant: {
+    name: "王大明",
+    idNumber: "A123456789",
+    address: "臺北市中正區重慶南路一段122號",
+  },
+  respondent: {
+    name: "李小華",
+    idNumber: "B234567894",
+    address: "新北市板橋區文化路一段266號",
+  },
+  claim: { amount: 500000, interestStartDate: "2025-01-16", interestRate: 6 },
+  factsAndReasons: {
+    acquisitionDate: "2024-06-01",
+    acquisitionReason: "借貸",
+    presentmentDate: "2025-01-20",
+    refusalDescription: "經提示後遭拒絕付款",
+  },
+  notes: [
+    {
+      issueDate: "2024-06-01",
+      noteNumber: "TH0001234",
+      amount: 500000,
+      dueDate: "2025-01-15",
+    },
+  ],
+  court: "臺灣臺北地方法院",
+};
+
 export default function Home() {
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +65,7 @@ export default function Home() {
     formState: { errors },
     control,
     watch,
+    reset,
   } = useForm<PetitionFormData>({
     resolver: zodResolver(petitionFormSchema),
     defaultValues: INITIAL_VALUES,
@@ -60,6 +90,15 @@ export default function Home() {
         <div className="lg:grid lg:grid-cols-2 lg:gap-8">
           {/* Left panel: Form */}
           <div>
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => reset(EXAMPLE_DATA)}
+                className="px-4 py-2 text-sm border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                填入範例
+              </button>
+            </div>
             <PetitionForm
               register={register}
               errors={errors}
@@ -70,17 +109,17 @@ export default function Home() {
 
           {/* Right panel: Preview + Download */}
           <div className="mt-8 lg:mt-0 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:overflow-y-auto">
-            <div className="mb-4">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
+              即時預覽
+            </p>
+            <PetitionPreview data={formData} previewRef={previewRef} />
+
+            <div className="mt-4">
               <PdfDownloadButton
                 previewRef={previewRef}
                 handleSubmit={handleSubmit}
               />
             </div>
-
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
-              即時預覽
-            </p>
-            <PetitionPreview data={formData} previewRef={previewRef} />
           </div>
         </div>
       </main>

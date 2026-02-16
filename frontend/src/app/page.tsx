@@ -16,7 +16,12 @@ const PdfDownloadButton = dynamic(
 const INITIAL_VALUES: PetitionFormData = {
   applicant: { name: "", idNumber: "", address: "" },
   respondent: { name: "", idNumber: "", address: "" },
-  claim: { amount: 0, interestStartDate: "", interestRate: 6 },
+  claim: {
+    amount: 0,
+    interestType: "statutory",
+    interestStartPoint: "presentation_date",
+    interestRate: 6,
+  },
   factsAndReasons: {
     acquisitionDate: "",
     acquisitionReason: "",
@@ -38,7 +43,12 @@ const EXAMPLE_DATA: PetitionFormData = {
     idNumber: "B234567894",
     address: "新北市板橋區文化路一段266號",
   },
-  claim: { amount: 500000, interestStartDate: "2025-01-16", interestRate: 6 },
+  claim: {
+    amount: 500000,
+    interestType: "statutory",
+    interestStartPoint: "maturity_date",
+    interestRate: 6,
+  },
   factsAndReasons: {
     acquisitionDate: "2024-06-01",
     acquisitionReason: "借貸",

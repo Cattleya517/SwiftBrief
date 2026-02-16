@@ -142,6 +142,22 @@ export default function NotesSection({ register, errors, control }: Props) {
                   {...register(`notes.${index}.dueDate`)}
                 />
               </div>
+
+              <div>
+                <label
+                  htmlFor={`note-${index}-paymentPlace`}
+                  className="block text-sm font-medium text-slate-600 mb-1"
+                >
+                  付款地（選填）
+                </label>
+                <input
+                  id={`note-${index}-paymentPlace`}
+                  type="text"
+                  placeholder="請輸入付款地"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-800/20 focus:border-blue-800"
+                  {...register(`notes.${index}.paymentPlace`)}
+                />
+              </div>
             </div>
           </div>
         ))}
@@ -149,7 +165,13 @@ export default function NotesSection({ register, errors, control }: Props) {
         <button
           type="button"
           onClick={() =>
-            append({ issueDate: "", noteNumber: "", amount: 0, dueDate: "" })
+            append({
+              issueDate: "",
+              noteNumber: "",
+              amount: 0,
+              dueDate: "",
+              paymentPlace: "",
+            })
           }
           className="w-full border-2 border-dashed border-slate-300 rounded-xl py-3 text-slate-500 hover:border-blue-800/40 hover:text-blue-800 transition-colors cursor-pointer flex items-center justify-center gap-2"
         >

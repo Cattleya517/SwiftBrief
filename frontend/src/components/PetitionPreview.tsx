@@ -188,6 +188,7 @@ export default function PetitionPreview({ data, previewRef }: Props) {
                 <th className="border border-black px-3 py-2">編號</th>
                 <th className="border border-black px-3 py-2">票號</th>
                 <th className="border border-black px-3 py-2">發票日</th>
+                <th className="border border-black px-3 py-2">付款地</th>
                 <th className="border border-black px-3 py-2">到期日</th>
                 <th className="border border-black px-3 py-2">
                   金額（新台幣）
@@ -205,6 +206,9 @@ export default function PetitionPreview({ data, previewRef }: Props) {
                     {PDate(note.issueDate)}
                   </td>
                   <td className="border border-black px-3 py-2">
+                    {P(note.paymentPlace)}
+                  </td>
+                  <td className="border border-black px-3 py-2">
                     {note.dueDate
                       ? toMinguoDate(note.dueDate)
                       : "未載到期日（見票即付）"}
@@ -217,7 +221,7 @@ export default function PetitionPreview({ data, previewRef }: Props) {
               {data.notes.length > 1 && (
                 <tr className="font-bold">
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="border border-black px-3 py-2 text-right"
                   >
                     合計

@@ -40,6 +40,7 @@ const promissoryNoteSchema = z.object({
     .number({ error: "請輸入金額" })
     .positive("金額必須大於零"),
   dueDate: z.string().optional(),
+  paymentPlace: z.string().optional(),
 });
 
 export const petitionFormSchema = z.object({

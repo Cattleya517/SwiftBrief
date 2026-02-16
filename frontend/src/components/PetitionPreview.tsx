@@ -22,9 +22,55 @@ export default function PetitionPreview({ data, previewRef }: Props) {
   const totalAmount = data.notes.reduce((sum, n) => sum + (n.amount || 0), 0);
 
   const generateInterestClause = () => {
-    if (!data.claim.interestStartDate) return "";
-    const rate = data.claim.interestRate || 6;
-    return `，並自${PDate(data.claim.interestStartDate)}起至清償日止，按年利率百分之${rate}計算之利息`;
+    const { interestType, interestStartPoint, interestRate, customInterestDate } =
+      data.claim;
+
+    // Legacy fallback
+    if (!interestType && data.claim.interestStartDate) {
+      const rate = data.claim.interestRate || 6;
+      return `，並自${PDate(data.claim.interestStartDate)}起至清償日止，按年利率百分之${rate}計算之利息`;
+    }
+
+    let rateText = "年利率百分之六";
+    if (interestType === "agreed" && interestRate) {
+      rateText = `約定年利率百分之${interestRate}`;
+    }
+
+    let startDateText = "";
+
+    if (interestType === "statutory") {
+      if (interestStartPoint === "maturity_date") {
+        // Ideally use specific date if single note or if they all match. 
+        // For now, if "maturity_date" is selected, it usually implies the *concept* or the specific date if we can resolve it.
+        // Common phrasing: "到期日" or "自民國xxx年xx月xx日(到期日)"
+        // Let's use specific date if single note has it.
+        if (data.notes.length === 1 && data.notes[0].dueDate) {
+          startDateText = PDate(data.notes[0].dueDate);
+        } else {
+          startDateText = "到期日";
+        }
+      } else if (interestStartPoint === "presentation_date") {
+        if (data.factsAndReasons.presentmentDate) {
+          startDateText = PDate(data.factsAndReasons.presentmentDate);
+        } else {
+          startDateText = "提示日";
+        }
+      }
+    } else if (interestType === "agreed") {
+      if (interestStartPoint === "invoice_date") {
+        if (data.notes.length === 1 && data.notes[0].issueDate) {
+          startDateText = PDate(data.notes[0].issueDate);
+        } else {
+          startDateText = "發票日";
+        }
+      } else if (interestStartPoint === "custom_date" && customInterestDate) {
+        startDateText = PDate(customInterestDate);
+      }
+    }
+
+    if (!startDateText) return "";
+
+    return `，並自${startDateText}起至清償日止，按${rateText}計算之利息`;
   };
 
   return (
@@ -104,8 +150,8 @@ export default function PetitionPreview({ data, previewRef }: Props) {
           <p className="indent-8">
             相對人於{PDate(data.notes[0]?.issueDate)}
             簽發之本票，內載憑票交付聲請人新台幣
-            {PAmount(totalAmount)}（NT${PAmountNum(totalAmount)}
-            ）{generateInterestClause()}
+            {PAmountNum(totalAmount)}元（新台幣{PAmount(totalAmount)}）
+            {generateInterestClause()}
             ，准予強制執行。
           </p>
         </div>

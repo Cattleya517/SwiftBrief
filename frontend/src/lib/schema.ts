@@ -14,8 +14,16 @@ const claimSchema = z.object({
   amount: z
     .number({ error: "請輸入本票面額" })
     .positive("金額必須大於零"),
-  interestStartDate: z.string().optional(),
+  interestType: z.enum(["statutory", "agreed"]),
+  interestStartPoint: z.enum([
+    "maturity_date",
+    "presentation_date",
+    "invoice_date",
+    "custom_date",
+  ]),
+  customInterestDate: z.string().optional(),
   interestRate: z.number().optional(),
+  interestStartDate: z.string().optional(),
 });
 
 const factsAndReasonsSchema = z.object({

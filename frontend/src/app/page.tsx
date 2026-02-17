@@ -1,12 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import dynamic from "next/dynamic";
 import { petitionFormSchema, PetitionFormData } from "@/lib/schema";
+import { OCRResponse } from "@/lib/api";
 import PetitionForm from "@/components/PetitionForm";
 import PetitionPreview from "@/components/PetitionPreview";
+import ModeTab from "@/components/ModeTab";
+import ImageUpload from "@/components/ImageUpload";
 
 const PdfDownloadButton = dynamic(
   () => import("@/components/PdfDownloadButton"),
@@ -68,6 +71,7 @@ const EXAMPLE_DATA: PetitionFormData = {
 
 export default function Home() {
   const previewRef = useRef<HTMLDivElement>(null);
+  const [mode, setMode] = useState<"manual" | "ocr">("manual");
 
   const {
     register,
@@ -76,12 +80,47 @@ export default function Home() {
     control,
     watch,
     reset,
+    getValues,
   } = useForm<PetitionFormData>({
     resolver: zodResolver(petitionFormSchema),
     defaultValues: INITIAL_VALUES,
   });
 
   const formData = watch();
+
+  const handleOCRComplete = useCallback(
+    (data: OCRResponse["data"]) => {
+      const current = getValues();
+
+      const mergedNote = {
+        ...current.notes[0],
+        ...(data.note.noteNumber && { noteNumber: data.note.noteNumber }),
+        ...(data.note.issueDate && { issueDate: data.note.issueDate }),
+        ...(data.note.dueDate && { dueDate: data.note.dueDate }),
+        ...(data.note.amount != null && { amount: data.note.amount }),
+        ...(data.note.paymentPlace && { paymentPlace: data.note.paymentPlace }),
+        ...(data.note.issuePlace && { issuePlace: data.note.issuePlace }),
+      };
+
+      const mergedRespondent = {
+        ...current.respondent,
+        ...(data.respondent.name && { name: data.respondent.name }),
+        ...(data.respondent.idNumber && { idNumber: data.respondent.idNumber }),
+        ...(data.respondent.address && { address: data.respondent.address }),
+      };
+
+      reset({
+        ...current,
+        respondent: mergedRespondent,
+        claim: {
+          ...current.claim,
+          ...(data.note.amount != null && { amount: data.note.amount }),
+        },
+        notes: [mergedNote, ...current.notes.slice(1)],
+      });
+    },
+    [getValues, reset],
+  );
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -100,7 +139,8 @@ export default function Home() {
         <div className="lg:grid lg:grid-cols-2 lg:gap-8">
           {/* Left panel: Form */}
           <div>
-            <div className="mb-4">
+            <div className="mb-4 flex items-center gap-3">
+              <ModeTab mode={mode} onModeChange={setMode} />
               <button
                 type="button"
                 onClick={() => reset(EXAMPLE_DATA)}
@@ -109,6 +149,9 @@ export default function Home() {
                 填入範例
               </button>
             </div>
+            {mode === "ocr" && (
+              <ImageUpload onOCRComplete={handleOCRComplete} />
+            )}
             <PetitionForm
               register={register}
               errors={errors}

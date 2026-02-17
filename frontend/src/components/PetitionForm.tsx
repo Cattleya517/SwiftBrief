@@ -30,9 +30,9 @@ export default function PetitionForm({
     <div className="space-y-6" role="form" aria-label="聲請狀表單">
       <PartySection type="applicant" register={register} errors={errors} />
       <PartySection type="respondent" register={register} errors={errors} />
+      <NotesSection register={register} errors={errors} control={control} />
       <ClaimSection register={register} errors={errors} watch={watch} />
       <FactsSection register={register} errors={errors} />
-      <NotesSection register={register} errors={errors} control={control} />
       <CourtSelect register={register} errors={errors} />
     </div>
   );

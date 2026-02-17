@@ -45,6 +45,7 @@ const promissoryNoteSchema = z.object({
 });
 
 export const petitionFormSchema = z.object({
+  court: z.string().min(1, "請選擇管轄法院"),
   applicant: partySchema,
   respondent: partySchema,
   claim: claimSchema,

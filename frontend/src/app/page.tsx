@@ -14,6 +14,7 @@ const PdfDownloadButton = dynamic(
 );
 
 const INITIAL_VALUES: PetitionFormData = {
+  court: "",
   applicant: { name: "", idNumber: "", address: "" },
   respondent: { name: "", idNumber: "", address: "" },
   claim: {
@@ -32,6 +33,7 @@ const INITIAL_VALUES: PetitionFormData = {
 };
 
 const EXAMPLE_DATA: PetitionFormData = {
+  court: "臺灣臺北地方法院",
   applicant: {
     name: "王大明",
     idNumber: "A123456789",

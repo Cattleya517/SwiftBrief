@@ -41,6 +41,7 @@ const promissoryNoteSchema = z.object({
     .positive("金額必須大於零"),
   dueDate: z.string().optional(),
   paymentPlace: z.string().optional(),
+  issuePlace: z.string().optional(),
 });
 
 export const petitionFormSchema = z.object({
@@ -49,7 +50,6 @@ export const petitionFormSchema = z.object({
   claim: claimSchema,
   factsAndReasons: factsAndReasonsSchema,
   notes: z.array(promissoryNoteSchema).min(1, "至少需要一張本票"),
-  court: z.string().min(1, "請選擇管轄法院"),
 });
 
 export type PetitionFormData = z.infer<typeof petitionFormSchema>;

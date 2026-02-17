@@ -158,6 +158,22 @@ export default function NotesSection({ register, errors, control }: Props) {
                   {...register(`notes.${index}.paymentPlace`)}
                 />
               </div>
+
+              <div>
+                <label
+                  htmlFor={`note-${index}-issuePlace`}
+                  className="block text-sm font-medium text-slate-600 mb-1"
+                >
+                  發票地（選填）
+                </label>
+                <input
+                  id={`note-${index}-issuePlace`}
+                  type="text"
+                  placeholder="請輸入發票地"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-800/20 focus:border-blue-800"
+                  {...register(`notes.${index}.issuePlace`)}
+                />
+              </div>
             </div>
           </div>
         ))}

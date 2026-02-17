@@ -4,6 +4,7 @@ import { RefObject } from "react";
 import { PetitionFormData } from "@/lib/schema";
 import { amountToChinese } from "@/lib/amount-to-chinese";
 import { toMinguoDate, getTodayMinguo } from "@/lib/date-utils";
+import { autoDetermineCourt } from "@/lib/court-utils";
 
 interface Props {
   data: PetitionFormData;
@@ -20,6 +21,7 @@ const PAmountNum = (value: number | undefined) =>
 
 export default function PetitionPreview({ data, previewRef }: Props) {
   const totalAmount = data.notes.reduce((sum, n) => sum + (n.amount || 0), 0);
+  const determinedCourt = autoDetermineCourt(data) || "＿＿＿地方法院";
 
   const generateInterestClause = () => {
     const { interestType, interestStartPoint, interestRate, customInterestDate } =
@@ -130,12 +132,7 @@ export default function PetitionPreview({ data, previewRef }: Props) {
           </div>
         </div>
 
-        {/* Court */}
-        <div className="text-center mb-4">
-          <p className="text-lg font-semibold">
-            {P(data.court)}　公鑒
-          </p>
-        </div>
+
 
         {/* Purpose */}
         <div className="mb-6">
@@ -189,6 +186,7 @@ export default function PetitionPreview({ data, previewRef }: Props) {
                 <th className="border border-black px-3 py-2">票號</th>
                 <th className="border border-black px-3 py-2">發票日</th>
                 <th className="border border-black px-3 py-2">付款地</th>
+                <th className="border border-black px-3 py-2">發票地</th>
                 <th className="border border-black px-3 py-2">到期日</th>
                 <th className="border border-black px-3 py-2">
                   金額（新台幣）
@@ -209,6 +207,9 @@ export default function PetitionPreview({ data, previewRef }: Props) {
                     {P(note.paymentPlace)}
                   </td>
                   <td className="border border-black px-3 py-2">
+                    {P(note.issuePlace)}
+                  </td>
+                  <td className="border border-black px-3 py-2">
                     {note.dueDate
                       ? toMinguoDate(note.dueDate)
                       : "未載到期日（見票即付）"}
@@ -221,7 +222,7 @@ export default function PetitionPreview({ data, previewRef }: Props) {
               {data.notes.length > 1 && (
                 <tr className="font-bold">
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="border border-black px-3 py-2 text-right"
                   >
                     合計
@@ -247,7 +248,9 @@ export default function PetitionPreview({ data, previewRef }: Props) {
 
         {/* Footer */}
         <div className="mt-12">
-          <p className="text-center mb-8">謹　狀</p>
+          <p className="text-center mb-8 text-lg font-semibold">
+            {determinedCourt}　公鑒
+          </p>
 
           <div className="text-right">
             <p className="mb-8">

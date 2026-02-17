@@ -67,7 +67,7 @@ const disclaimerItems = [
   {
     icon: <ShieldIcon />,
     title: "免責條款",
-    text: "本工具僅提供文書格式產生之輔助功能，所產生之內容不構成法律意見，本站不負任何法律責任。",
+    text: "本工具僅提供文書格式產生之輔助功能，並不提供法律意見，所產生之內容，本站不負任何法律責任。",
   },
   {
     icon: <LockIcon />,
@@ -82,17 +82,9 @@ const disclaimerItems = [
 ];
 
 export default function DisclaimerModal() {
-  const [showModal, setShowModal] = useState(false);
-
-  useEffect(() => {
-    const accepted = localStorage.getItem(STORAGE_KEY);
-    if (accepted !== "true") {
-      setShowModal(true);
-    }
-  }, []);
+  const [showModal, setShowModal] = useState(true);
 
   function handleAccept() {
-    localStorage.setItem(STORAGE_KEY, "true");
     setShowModal(false);
   }
 

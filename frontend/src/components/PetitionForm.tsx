@@ -33,7 +33,6 @@ export default function PetitionForm({
       <NotesSection register={register} errors={errors} control={control} />
       <ClaimSection register={register} errors={errors} watch={watch} />
       <FactsSection register={register} errors={errors} />
-      <CourtSelect register={register} errors={errors} />
     </div>
   );
 }

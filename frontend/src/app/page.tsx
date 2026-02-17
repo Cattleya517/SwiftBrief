@@ -29,7 +29,6 @@ const INITIAL_VALUES: PetitionFormData = {
     refusalDescription: "",
   },
   notes: [{ issueDate: "", noteNumber: "", amount: 0, dueDate: "" }],
-  court: "",
 };
 
 const EXAMPLE_DATA: PetitionFormData = {
@@ -63,7 +62,6 @@ const EXAMPLE_DATA: PetitionFormData = {
       dueDate: "2025-01-15",
     },
   ],
-  court: "臺灣臺北地方法院",
 };
 
 export default function Home() {

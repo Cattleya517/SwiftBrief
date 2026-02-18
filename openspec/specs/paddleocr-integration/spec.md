@@ -68,9 +68,14 @@
 
 ### Requirement: API contract
 
-`POST /api/ocr` 的 request（multipart/form-data, field: `image`）和 response SHALL 回傳 `success`、`data`（含 note、respondent、applicant、claim）、`rawText`。所有欄位皆 optional。
+`POST /api/ocr` 的 request（multipart/form-data, field: `image`）和 response SHALL 回傳 `success`、`data`（含 note、respondent、applicant、claim）、`rawText`。所有欄位皆 optional。前端的 OCR 請求 SHALL 僅在使用者明確確認預覽照片後才發送，不再於檔案選取時自動觸發。
 
 #### Scenario: Response format with all fields
 
-- **WHEN** 成功辨識本票照片
+- **WHEN** 使用者確認預覽照片後成功辨識本票
 - **THEN** 回傳 JSON 包含 `success: true`、`data.note`、`data.respondent`、`data.applicant`、`data.claim`、`rawText`
+
+#### Scenario: OCR request only sent after user confirmation
+
+- **WHEN** 使用者上傳照片但尚未點擊確認按鈕
+- **THEN** 系統 SHALL NOT 發送任何 OCR API 請求

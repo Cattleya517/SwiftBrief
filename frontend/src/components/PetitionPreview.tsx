@@ -3,7 +3,7 @@
 import { RefObject } from "react";
 import { PetitionFormData } from "@/lib/schema";
 import { amountToChinese } from "@/lib/amount-to-chinese";
-import { toMinguoDate, getTodayMinguo } from "@/lib/date-utils";
+import { toMinguoDate, splitMinguoDate, getTodayMinguo } from "@/lib/date-utils";
 import { autoDetermineCourt } from "@/lib/court-utils";
 
 interface Props {
@@ -182,52 +182,62 @@ export default function PetitionPreview({ data, previewRef }: Props) {
           <table className="w-full border-collapse border border-black text-center">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border border-black px-3 py-2">編號</th>
-                <th className="border border-black px-3 py-2">票號</th>
-                <th className="border border-black px-3 py-2">發票日</th>
-                <th className="border border-black px-3 py-2">付款地</th>
-                <th className="border border-black px-3 py-2">發票地</th>
-                <th className="border border-black px-3 py-2">到期日</th>
-                <th className="border border-black px-3 py-2">
+                <th className="border border-black px-1 py-2">編號</th>
+                <th className="border border-black px-1 py-2">票號</th>
+                <th className="border border-black px-1 py-2">發票日</th>
+                <th className="border border-black px-1 py-2">付款地</th>
+                <th className="border border-black px-1 py-2">發票地</th>
+                <th className="border border-black px-1 py-2">到期日</th>
+                <th className="border border-black px-1 py-2">
                   金額（新台幣）
                 </th>
               </tr>
             </thead>
             <tbody>
-              {data.notes.map((note, i) => (
-                <tr key={i}>
-                  <td className="border border-black px-3 py-2">{i + 1}</td>
-                  <td className="border border-black px-3 py-2">
-                    {P(note.noteNumber)}
-                  </td>
-                  <td className="border border-black px-3 py-2">
-                    {PDate(note.issueDate)}
-                  </td>
-                  <td className="border border-black px-3 py-2">
-                    {P(note.paymentPlace)}
-                  </td>
-                  <td className="border border-black px-3 py-2">
-                    {P(note.issuePlace)}
-                  </td>
-                  <td className="border border-black px-3 py-2">
-                    {note.dueDate
-                      ? toMinguoDate(note.dueDate)
-                      : "未載到期日（見票即付）"}
-                  </td>
-                  <td className="border border-black px-3 py-2">
-                    {PAmountNum(note.amount)}
-                  </td>
-                </tr>
-              ))}
+              {data.notes.map((note, i) => {
+                const issueDate = splitMinguoDate(note.issueDate);
+                const dueDate = note.dueDate ? splitMinguoDate(note.dueDate) : null;
+                return (
+                  <tr key={i}>
+                    <td className="border border-black px-1 py-2">{i + 1}</td>
+                    <td className="border border-black px-1 py-2">
+                      {P(note.noteNumber)}
+                    </td>
+                    <td className="border border-black px-1 py-2">
+                      {issueDate ? (
+                        <>{issueDate.yearPart}<br />{issueDate.dayPart}</>
+                      ) : (
+                        "民國＿年＿月＿日"
+                      )}
+                    </td>
+                    <td className="border border-black px-1 py-2">
+                      {P(note.paymentPlace)}
+                    </td>
+                    <td className="border border-black px-1 py-2">
+                      {P(note.issuePlace)}
+                    </td>
+                    <td className="border border-black px-1 py-2">
+                      {dueDate ? (
+                        <>{dueDate.yearPart}<br />{dueDate.dayPart}</>
+                      ) : (
+                        "未載到期日（見票即付）"
+                      )}
+                    </td>
+                    <td className="border border-black px-1 py-2">
+                      {PAmountNum(note.amount)}
+                    </td>
+                  </tr>
+                );
+              })}
               {data.notes.length > 1 && (
                 <tr className="font-bold">
                   <td
                     colSpan={6}
-                    className="border border-black px-3 py-2 text-right"
+                    className="border border-black px-1 py-2 text-right"
                   >
                     合計
                   </td>
-                  <td className="border border-black px-3 py-2">
+                  <td className="border border-black px-1 py-2">
                     {PAmountNum(totalAmount)}
                   </td>
                 </tr>

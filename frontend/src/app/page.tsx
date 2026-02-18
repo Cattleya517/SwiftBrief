@@ -149,13 +149,22 @@ export default function Home() {
           <div>
             <div className="mb-4 flex items-center gap-3">
               <ModeTab mode={mode} onModeChange={setMode} />
-              <button
-                type="button"
-                onClick={() => reset(EXAMPLE_DATA)}
-                className="px-4 py-2 text-sm border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                填入範例
-              </button>
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => reset(EXAMPLE_DATA)}
+                  className="px-4 py-2 text-sm border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  填入範例
+                </button>
+                <button
+                  type="button"
+                  onClick={() => reset(INITIAL_VALUES)}
+                  className="px-4 py-2 text-sm border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  清除內容
+                </button>
+              </div>
             </div>
             {mode === "ocr" && (
               <ImageUpload onOCRComplete={handleOCRComplete} />

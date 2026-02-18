@@ -13,11 +13,22 @@ export interface OCRRespondentResult {
   address?: string;
 }
 
+export interface OCRApplicantResult {
+  name?: string;
+}
+
+export interface OCRClaimResult {
+  interestRate?: number;
+  interestStartPoint?: string;
+}
+
 export interface OCRResponse {
   success: boolean;
   data: {
     note: OCRNoteResult;
     respondent: OCRRespondentResult;
+    applicant?: OCRApplicantResult;
+    claim?: OCRClaimResult;
   };
   rawText: string;
 }

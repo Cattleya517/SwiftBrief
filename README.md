@@ -8,18 +8,22 @@
 使用者上傳本票照片
         │
         ▼
-  ┌─────────────┐     ┌──────────────┐     ┌──────────────┐
-  │  Frontend    │────▶│  Backend     │────▶│  Umi-OCR     │
-  │  Next.js     │     │  FastAPI     │     │  本地 OCR    │
-  │  port 3000   │     │  port 8000   │     │  port 1224   │
-  └─────────────┘     └──────┬───────┘     └──────────────┘
-                             │
-                             ▼
-                      ┌──────────────┐
-                      │  Ollama      │
-                      │  本地 LLM    │
-                      │  port 11434  │
-                      └──────────────┘
+  ┌─────────────┐     ┌───────────────────────────┐
+  │  Frontend    │────▶│  Backend (FastAPI)         │
+  │  Next.js     │     │  port 8000                │
+  │  port 3000   │     │                           │
+  └─────────────┘     │  ┌───────────────────┐    │
+                      │  │ PaddleOCR PP-OCRv5 │    │
+                      │  │ (in-process OCR)   │    │
+                      │  └───────────────────┘    │
+                      └─────────┬─────────────────┘
+                                │
+                                ▼
+                         ┌──────────────┐
+                         │  Ollama      │
+                         │  本地 LLM    │
+                         │  port 11434  │
+                         └──────────────┘
 ```
 
 **完全離線方案** — OCR 和 LLM 都在本地執行，法律文書資料不出本機。
@@ -29,30 +33,13 @@
 - **Node.js** ≥ 18
 - **Python** ≥ 3.11
 - **uv** — Python 套件管理 ([安裝](https://docs.astral.sh/uv/getting-started/installation/))
-- **Umi-OCR** — 本地 OCR 引擎
 - **Ollama** — 本地 LLM 推論引擎
 
 ## 啟動本地服務
 
-依照以下順序啟動，三個服務都需要同時運行。
+Backend 和 Ollama 需要同時運行。PaddleOCR 已內建在後端，不需要額外啟動。
 
-### 1. Umi-OCR
-
-從 [Umi-OCR GitHub Releases](https://github.com/hiroi-sora/Umi-OCR/releases) 下載對應平台版本，解壓後直接開啟應用程式。
-
-啟動後確認 HTTP 服務已開啟（預設 `http://127.0.0.1:1224`）：
-
-- 開啟 Umi-OCR → 全局設定 → 勾選「進階」→ 確認 HTTP 服務已啟用
-
-驗證服務是否正常：
-
-```bash
-curl http://127.0.0.1:1224/api/ocr \
-  -H "Content-Type: application/json" \
-  -d '{"base64": "", "options": {"data.format": "text"}}'
-```
-
-### 2. Ollama + Qwen2.5
+### 1. Ollama + Qwen2.5
 
 安裝 Ollama：
 
@@ -81,7 +68,7 @@ curl http://127.0.0.1:11434/v1/chat/completions \
   -d '{"model": "qwen2.5", "messages": [{"role": "user", "content": "你好"}]}'
 ```
 
-### 3. Backend（FastAPI）
+### 2. Backend（FastAPI）
 
 ```bash
 cd backend
@@ -98,7 +85,9 @@ curl http://localhost:8000/health
 # {"status": "ok"}
 ```
 
-### 4. Frontend（Next.js）
+首次啟動時，PaddleOCR 會自動下載 PP-OCRv5 模型（約數百 MB），後續啟動使用快取。
+
+### 3. Frontend（Next.js）
 
 ```bash
 cd frontend
@@ -129,7 +118,6 @@ npm run dev
 
 | 變數 | 預設值 | 說明 |
 |------|--------|------|
-| `UMI_OCR_URL` | `http://127.0.0.1:1224/api/ocr` | Umi-OCR API 位址 |
 | `OLLAMA_BASE_URL` | `http://127.0.0.1:11434/v1` | Ollama API 位址 |
 | `OLLAMA_MODEL` | `qwen2.5` | 使用的 LLM 模型名稱 |
 

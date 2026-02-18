@@ -1,12 +1,25 @@
-import base64
-import os
-
-import httpx
+import io
+import numpy as np
+from PIL import Image
+from paddleocr import PaddleOCR
 
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/heic"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
-UMI_OCR_URL = os.environ.get("UMI_OCR_URL", "http://127.0.0.1:1224/api/ocr")
+_ocr_instance: PaddleOCR | None = None
+
+
+def _get_ocr() -> PaddleOCR:
+    global _ocr_instance
+    if _ocr_instance is None:
+        _ocr_instance = PaddleOCR(
+            text_detection_model_name="PP-OCRv5_mobile_det",
+            text_recognition_model_name="PP-OCRv5_mobile_rec",
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=False,
+        )
+    return _ocr_instance
 
 
 class OCRError(Exception):
@@ -20,26 +33,23 @@ def validate_image(content: bytes, content_type: str | None) -> None:
         raise OCRError("檔案大小超過 10MB 限制。")
 
 
-async def extract_text(image_bytes: bytes) -> str:
-    b64 = base64.b64encode(image_bytes).decode()
+def extract_text(image_bytes: bytes) -> str:
+    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    img_array = np.array(img)
 
-    async with httpx.AsyncClient(timeout=60) as client:
-        try:
-            resp = await client.post(
-                UMI_OCR_URL,
-                json={"base64": b64, "options": {"data.format": "text"}},
-            )
-        except httpx.ConnectError:
-            raise OCRError("無法連線到 Umi-OCR，請確認 Umi-OCR 已啟動。")
+    ocr = _get_ocr()
+    results = list(ocr.predict(img_array))
 
-    result = resp.json()
+    if not results:
+        raise OCRError("無法從圖片中辨識出任何文字。")
 
-    if result.get("code") != 100:
-        msg = result.get("data", "OCR 辨識失敗")
-        raise OCRError(f"Umi-OCR 錯誤: {msg}")
+    lines: list[str] = []
+    for res in results:
+        rec_texts = res.get("rec_texts", []) if isinstance(res, dict) else getattr(res, "rec_texts", [])
+        lines.extend(rec_texts)
 
-    text = result.get("data", "")
-    if not text or not text.strip():
+    text = "\n".join(lines)
+    if not text.strip():
         raise OCRError("無法從圖片中辨識出任何文字。")
 
     return text

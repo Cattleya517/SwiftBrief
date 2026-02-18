@@ -9,5 +9,7 @@ dependencies = [
     "instructor>=1.7.0",
     "openai>=1.0.0",
     "python-multipart>=0.0.9",
-    "httpx>=0.28.0",
+    "paddlepaddle>=3.0.0",
+    "paddleocr>=3.0.0",
+    "opencc-python-reimplemented>=0.1.7",
 ]

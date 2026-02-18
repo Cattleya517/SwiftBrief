@@ -109,12 +109,20 @@ export default function Home() {
         ...(data.respondent.address && { address: data.respondent.address }),
       };
 
+      const mergedApplicant = {
+        ...current.applicant,
+        ...(data.applicant?.name && { name: data.applicant.name }),
+      };
+
       reset({
         ...current,
+        applicant: mergedApplicant,
         respondent: mergedRespondent,
         claim: {
           ...current.claim,
           ...(data.note.amount != null && { amount: data.note.amount }),
+          ...(data.claim?.interestRate != null && { interestRate: data.claim.interestRate }),
+          ...(data.claim?.interestStartPoint && { interestStartPoint: data.claim.interestStartPoint as "maturity_date" | "presentation_date" | "invoice_date" | "custom_date" }),
         },
         notes: [mergedNote, ...current.notes.slice(1)],
       });

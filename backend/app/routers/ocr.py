@@ -16,7 +16,7 @@ async def ocr_endpoint(image: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=str(e))
 
     try:
-        raw_text = await extract_text(content)
+        raw_text = extract_text(content)
     except OCRError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
